@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     # Third parties & Libraries
     'rest_framework',
     
-    # Custome apps
+    # Custom apps
     'Users.apps.UsersConfig',
+    'Authentication.apps.AuthenticationConfig'
 ]
 
 MIDDLEWARE = [
