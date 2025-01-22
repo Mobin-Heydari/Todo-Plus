@@ -5,7 +5,6 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for the User model.
@@ -47,16 +46,18 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        """
-        Validate the password and confirm password fields.
-        """
-        if data['password'] != data['confirm_password']:
+        if 'password' in data and 'confirm_password' in data:
+            if data['password'] != data['confirm_password']:
+                raise serializers.ValidationError({
+                    'password': 'Password fields did not match.'
+                })
+            if len(data["password"]) <= 8 or len(data["password"]) >= 16:
+                raise serializers.ValidationError({
+                    'password': 'Password must be between 9 and 15 characters long.'
+                })
+        elif 'password' in data or 'confirm_password' in data:
             raise serializers.ValidationError({
-                'password': 'Password fields did not match.'
-            })
-        if len(data["password"]) <= 8 or len(data["password"]) >= 16:
-            raise serializers.ValidationError({
-                'password': 'Password must be between 9 and 15 characters long.'
+                'password': 'Both password and confirm_password fields are required.'
             })
         return data
 
@@ -79,9 +80,5 @@ class UserSerializer(serializers.ModelSerializer):
         instance.email = validated_data.get('email', instance.email)
         instance.username = validated_data.get('username', instance.username)
         instance.full_name = validated_data.get('full_name', instance.full_name)
-        instance.is_active = validated_data.get('is_active', instance.is_active)
-        instance.is_admin = validated_data.get('is_admin', instance.is_admin)
-        if 'password' in validated_data:
-            instance.set_password(validated_data['password'])
         instance.save()
         return instance
