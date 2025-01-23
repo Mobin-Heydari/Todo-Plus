@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 
 from Users.models import User
 
-from .serializers import TokenObtainSerializer, LoginSerializer
+from .serializers import TokenObtainSerializer, LoginSerializer, LogoutSerializer
 
 
 
@@ -83,3 +83,12 @@ class LoginAPIView(APIView):
             return Response({'error': 'Validation error'}, status=status.HTTP_400_BAD_REQUEST)
         # Call the parent class's handle_exception method for other exceptions
         return super().handle_exception(exc)
+
+
+class LogoutAPIView(APIView):
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Logged out successfully'})
+        return Response(serializer.errors, status=400)

@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from Users.models import User
 
+from .models import BlacklistedToken
 
 
 class TokenObtainSerializer(TokenObtainPairSerializer):
@@ -79,3 +81,28 @@ class LoginSerializer(serializers.Serializer):
         
         # Return the validated data
         return data
+    
+
+class LogoutSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField(max_length=255)
+
+    def validate(self, data):
+        refresh_token = data.get('refresh_token')
+        if not refresh_token:
+            raise serializers.ValidationError('Refresh token is required')
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception as e:
+            raise serializers.ValidationError('Invalid refresh token')
+        return data
+
+    def save(self):
+        refresh_token = self.validated_data['refresh_token']
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            BlacklistedToken.objects.create(token=token)
+        except Exception as e:
+            raise serializers.ValidationError('Invalid refresh token')
+            # Log the error or handle it in some other way
