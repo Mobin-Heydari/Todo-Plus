@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     
     # Third parties & Libraries
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
     
     # Custom apps
     'Users.apps.UsersConfig',
