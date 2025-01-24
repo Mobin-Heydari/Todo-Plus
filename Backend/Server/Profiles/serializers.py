@@ -65,11 +65,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'user', 'image', 'age', 'bio', 'location', 'language', 'social_media', 'security_authentication']
 
-    # Define a method to create a new profile
-    def create(self, validated_data):
-        # Create a new profile with the validated data
-        return Profile.objects.create(**validated_data)
-
     # Define a method to update an existing profile
     def update(self, instance, validated_data):
         # Update the profile with the validated data
