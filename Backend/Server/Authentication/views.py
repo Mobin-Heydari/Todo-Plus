@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 
 from Users.models import User
 
-from .serializers import TokenObtainSerializer, LoginSerializer, LogoutSerializer
+from .serializers import TokenObtainSerializer, LoginSerializer, LogoutSerializer, UserRegisterSerializer
 
 
 
@@ -103,3 +103,44 @@ class LogoutAPIView(APIView):
         else:
             # Return an error response with the validation errors
             return Response(serializer.errors, status=400)
+
+
+class UserRegisterView(APIView):
+    """
+    View to handle user registration.
+    """
+    
+    def post(self, request):
+        """
+        Handle POST request to register a new user.
+        """
+        
+        # Get the serializer instance
+        serializer = UserRegisterSerializer(data=request.data)
+        
+        # Validate the serializer data
+        if serializer.is_valid():
+            # Create a new user instance
+            user_data = serializer.create(serializer.validated_data)
+            
+            # Return the user data and tokens
+            return Response(user_data, status=status.HTTP_201_CREATED)
+        else:
+            # Return the validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Define a method to handle exceptions raised during view execution
+    def handle_exception(self, exc):
+        """
+        Handle exceptions raised during view execution.
+        
+        :param exc: The exception object
+        :return: A response object with an error message
+        """
+        
+        # Check if the exception is a validation error
+        if isinstance(exc, ValidationError):
+            # Return a response with a validation error message
+            return Response({'error': 'Validation error'}, status=status.HTTP_400_BAD_REQUEST)
+        # Call the parent class's handle_exception method for other exceptions
+        return super().handle_exception(exc)
