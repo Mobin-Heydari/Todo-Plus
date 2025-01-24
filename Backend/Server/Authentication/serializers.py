@@ -1,8 +1,8 @@
 from rest_framework import serializers
+from rest_framework import validators
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken, Token
-from rest_framework_simplejwt.tokens import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from Users.models import User
 
@@ -133,3 +133,104 @@ class LogoutSerializer(serializers.Serializer):
         
         # Return the validated data
         return data
+
+
+
+class UserRegisterSerializer(serializers.Serializer):
+    """
+    Serializer to validate user registration data.
+    """
+    
+    # Define the email field with validation to ensure uniqueness
+    email = serializers.EmailField(
+        validators=[
+            validators.UniqueValidator(queryset=User.objects.all())  # Ensure email is unique in User model
+        ],
+        required=True,  # Email is required
+        help_text="Enter a unique email address"  # Help text for the email field
+    )
+
+    # Define the username field with validation to ensure uniqueness
+    username = serializers.CharField(
+        validators=[
+            validators.UniqueValidator(queryset=User.objects.all())  # Ensure username is unique in User model
+        ],
+        required=True,  # Username is required
+        min_length=3,  # Minimum length for the username
+        max_length=20,  # Maximum length for the username
+        help_text="Enter a unique username (3-20 characters)"  # Help text for the username field
+    )
+
+    # Define the full name field
+    full_name = serializers.CharField(
+        required=True,  # Full name is required
+        min_length=3,  # Minimum length for the full name
+        max_length=50,  # Maximum length for the full name
+        help_text="Enter your full name (3-50 characters)"  # Help text for the full name field
+    )
+
+    # Define the password field with validation
+    password = serializers.CharField(
+        min_length=8,  # Minimum length for the password
+        max_length=16,  # Maximum length for the password
+        required=True,  # Password is required
+        write_only=True,  # Password is not returned in the response
+        help_text="Enter a password (8-16 characters)"  # Help text for the password field
+    )
+
+    # Define the password confirmation field
+    password_conf = serializers.CharField(
+        min_length=8,  # Minimum length for the password confirmation
+        max_length=16,  # Maximum length for the password confirmation
+        required=True,  # Password confirmation is required
+        write_only=True,  # Password confirmation is not returned in the response
+        help_text="Confirm your password (8-16 characters)"  # Help text for the password confirmation field
+    )
+
+
+    # Validate the password field
+    def validate_password(self, value):
+        # Check if the password length is within the allowed range
+        if len(value) < 8 or len(value) > 16:
+            raise serializers.ValidationError('Password must be at least 8 characters long and the most 16 characters long')
+        return value
+
+    # Validate the entire serializer
+    def validate(self, attrs):
+        # Check if the password and password_conf match
+        if attrs['password'] != attrs['password_conf']:
+            raise serializers.ValidationError('Passwords do not match')
+        if attrs['password'] == attrs['username']:
+            raise serializers.ValidationError('Password cannot be the same as the username')
+
+        return attrs
+
+    # Create a new user instance
+    def create(self, validated_data):
+        # Create a new user instance
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            password=validated_data['password'],
+            full_name=validated_data['full_name']
+        )
+
+        # Save the user to the database
+        user.save()
+
+        # Generate tokens for the user
+        refresh = RefreshToken.for_user(user)
+
+        # Return user data and tokens
+        return {
+            'user': {
+                'username': user.username,
+                'email': user.email,
+                'full_name': user.full_name,
+                # Add any other user fields you want to return
+            },
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+        }
