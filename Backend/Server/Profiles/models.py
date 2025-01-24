@@ -1,6 +1,5 @@
 # Import necessary modules
 from django.db import models
-from Users.models import User
 
 # Define the Profile model
 class Profile(models.Model):
@@ -9,7 +8,7 @@ class Profile(models.Model):
     """
     # One-to-one relationship with the User model
     user = models.OneToOneField(
-        User,
+        'Users.User',
         on_delete=models.CASCADE,
         related_name='profile',
     )
