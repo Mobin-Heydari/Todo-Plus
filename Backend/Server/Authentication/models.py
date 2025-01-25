@@ -1,8 +1,7 @@
 from django.db import models
+import uuid
 
 from Users.models import User
-
-
 
 class OneTimePassword(models.Model):
     # User who requested the OTP
@@ -13,7 +12,7 @@ class OneTimePassword(models.Model):
     )
 
     # Field to store a unique token for the OTP
-    token = models.CharField(max_length=250, unique=True)
+    token = models.UUIDField(max_length=250, unique=True, default=uuid.uuid4)
     
     code = models.CharField(max_length=6)  # Field to store the OTP code
 
@@ -27,4 +26,3 @@ class OneTimePassword(models.Model):
     
     def __str__(self):
         return f'user: {self.user.username}, code: {self.code}'
-    
