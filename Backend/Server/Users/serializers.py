@@ -29,7 +29,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id',
             'username',
             'email',
             'full_name',
@@ -42,7 +41,8 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'password': {'write_only': True},
-            'confirm_password': {'write_only': True}
+            'confirm_password': {'write_only': True},
+            'is_verified': {'read_only': True}
         }
 
     def validate(self, data):
@@ -61,24 +61,12 @@ class UserSerializer(serializers.ModelSerializer):
             })
         return data
 
-    def create(self, validated_data):
-        """
-        Create a new user instance.
-        """
-        user = User.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            full_name=validated_data['full_name'],
-            password=validated_data['password']
-        )
-        return user
-
     def update(self, instance, validated_data):
         """
         Update an existing user instance.
         """
-        instance.email = validated_data.get('email', instance.email)
         instance.username = validated_data.get('username', instance.username)
         instance.full_name = validated_data.get('full_name', instance.full_name)
         instance.save()
+
         return instance

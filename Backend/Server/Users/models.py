@@ -18,6 +18,9 @@ class User(AbstractUser ):
     # Full name field with required
     full_name = models.CharField(max_length=255, blank=False)
 
+    # Verified status field with default False
+    is_verified = models.BooleanField(default=False)
+
     # Active status field with default True
     is_active = models.BooleanField(default=True)
 

@@ -1,7 +1,7 @@
 from django.db.models import Manager
 from django.contrib.auth.models import BaseUserManager
 
-from Profiles.models import Profile, ProfileSocialMedia, ProfileSecurityAuthentication
+from Profiles.models import Profile
 
 
 class UserManager(BaseUserManager):
@@ -44,15 +44,10 @@ class UserManager(BaseUserManager):
         
         # Creating the profile
         profile = Profile.objects.create(user=user)
-        # Creating the profile objects class
-        profile_social_media = ProfileSocialMedia.objects.create(profile=profile)
-        profile_sec_auth = ProfileSecurityAuthentication.objects.create(profile=profile)
 
         try:
             # Save the profile, profile social media, and profile security authentication to the database
             profile.save(using=self._db)
-            profile_social_media.save(using=self._db)
-            profile_sec_auth.save(using=self._db)
         except Exception as e:
             # Handle any exceptions that occur during profile creation
             raise ValueError("Failed to create profile: {}".format(str(e)))

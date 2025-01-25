@@ -73,7 +73,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     # Define the update method for the viewset
     def update(self, request, user_username, *args, **kwargs):
-        # try:
+        try:
             # Check if the user is staff or the user themselves
             if request.user.username == user_username or request.user.is_staff:
                 # Getting the user instance
@@ -91,27 +91,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
             else:
                 # Return a 403 Forbidden response if the user is not staff or the user themselves
                 return Response({"error": "You do not have permission to update this content"}, status=status.HTTP_403_FORBIDDEN)
-        # except Exception as e:
-        #     # Return a 500 Internal Server Error response if an exception occurs
-        #     return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    # Define the destroy method for the viewset
-    def destroy(self, request, user_username, *args, **kwargs):
-        """
-        Handle DELETE requests to delete a single profile.
-        """
-        try:
-            # Check if the user is staff or the user themselves
-            if request.user.username == user_username or request.user.is_staff:
-                # Retrieve the profile instance
-                instance = get_object_or_404(Profile, user_username=user_username)
-                # Delete the profile instance
-                self.perform_destroy(instance)
-                # Return a 204 No Content response
-                return Response({"Detail": "Profile deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                # Return a 403 Forbidden response if the user is not staff or the user themselves
-                return Response({"error": "You do not have permission to delete this content"}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             # Return a 500 Internal Server Error response if an exception occurs
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

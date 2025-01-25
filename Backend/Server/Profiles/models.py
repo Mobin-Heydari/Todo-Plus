@@ -32,29 +32,6 @@ class Profile(models.Model):
     # Language field to store the user's language
     language = models.CharField(max_length=10, blank=True)
 
-
-    # Return the user's username as a string representation of the profile
-    def __str__(self):
-        return f'{self.user.username}'
-
-    # Define the meta options for the Profile model
-    class Meta:
-        verbose_name = "Profile"
-        verbose_name_plural = "Profiles"
-
-
-# Define the ProfileSocialMedia model
-class ProfileSocialMedia(models.Model):
-    """
-    This model represents a user's social media profiles.
-    """
-    # One-to-one relationship with the Profile model
-    profile = models.OneToOneField(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='social_media',
-    )
-
     # LinkedIn field to store the user's LinkedIn profile URL
     linkedin_profile = models.URLField(null=True, blank=True)
 
@@ -73,42 +50,12 @@ class ProfileSocialMedia(models.Model):
     # X field to store the user's X profile URL
     x_profile = models.URLField(null=True, blank=True)
 
-    # Return the user's username as a string representation of the social media profile
+
+    # Return the user's username as a string representation of the profile
     def __str__(self):
-        return f'{self.profile.user.username}\'s Social Media'
+        return f'{self.user.username}'
 
-    # Define the meta options for the ProfileSocialMedia model
+    # Define the meta options for the Profile model
     class Meta:
-        verbose_name = "Profile Social Media"
-        verbose_name_plural = "Profiles Social Media"
-
-
-# Define the ProfileSecurityAuthentication model
-class ProfileSecurityAuthentication(models.Model):
-    """
-    This model represents the security and authentication settings for a user's profile.
-    """
-    # One-to-one relationship with the Profile model
-    profile = models.OneToOneField(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='security_authentication',
-    )
-
-    # Two-factor authentication status
-    two_factor_auth = models.BooleanField(default=False)
-
-    # Password reset token for account recovery
-    password_reset_token = models.CharField(max_length=255, blank=True)
-
-    # Timestamp of the last login
-    last_login = models.DateTimeField(blank=True, null=True)
-
-    # Return the user's username as a string representation of the security profile
-    def __str__(self):
-        return f'{self.profile.user.username}\'s Security'
-
-    # Define the meta options for the ProfileSecurityAuthentication model
-    class Meta:
-        verbose_name = "Profile Security"
-        verbose_name_plural = "Profiles Security"
+        verbose_name = "Profile"
+        verbose_name_plural = "Profiles"

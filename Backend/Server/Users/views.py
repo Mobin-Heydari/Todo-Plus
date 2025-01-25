@@ -6,8 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import User
 from .serializers import UserSerializer
-from .permissions import IsStaffOrSelf, IsStaff, IsSelf
-
+from .permissions import IsStaffOrSelf
 
 
 # Define a viewset for the User model
@@ -90,27 +89,6 @@ class UserViewSet(viewsets.ModelViewSet):
             else:
                 # Return a 403 Forbidden response if the user is not staff or the user themselves
                 return Response({"error": "You do not have permission to update this content"}, status=status.HTTP_403_FORBIDDEN)
-        except Exception as e:
-            # Return a 500 Internal Server Error response if an exception occurs
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    # Define the destroy method for the viewset
-    def destroy(self, request, username, *args, **kwargs):
-        """
-        Handle DELETE requests to delete a single user.
-        """
-        try:
-            # Check if the user is staff or the user themselves
-            if request.user.username == username or request.user.is_staff:
-                # Retrieve the user instance
-                instance = get_object_or_404(User, username=username)
-                # Delete the user instance
-                self.perform_destroy(instance)
-                # Return a 204 No Content response
-                return Response({"Detail": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                # Return a 403 Forbidden response if the user is not staff or the user themselves
-                return Response({"error": "You do not have permission to delete this content"}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             # Return a 500 Internal Server Error response if an exception occurs
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
