@@ -7,4 +7,5 @@ app_name = "Accounts"
 urlpatterns = [
     # URL pattern for generating a new OTP
     path('generate-otp/', views.GenerateOTPView.as_view(), name='generate-otp'),
+    path('account-verification/', views.AccountVerificationView.as_view(), name='account-verification'),
 ]

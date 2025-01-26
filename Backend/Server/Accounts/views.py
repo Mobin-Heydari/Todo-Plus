@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 
 from Users.models import User
 from .models import OneTimePassword
-from .serializers import OneTimePasswordSerializer
+from .serializers import OneTimePasswordSerializer, OneTimePasswordVerificationSerializer
 
 
 
@@ -65,3 +65,45 @@ class GenerateOTPView(APIView):
             return Response({'error': 'Validation error', 'details': exc.detail}, status=status.HTTP_400_BAD_REQUEST)
         # Call the parent class's handle_exception method for other exceptions
         return super().handle_exception(exc)
+
+class AccountVerificationView(APIView):
+    """
+    View for verifying a one-time password.
+    """
+
+    def post(self, request, token):
+        """
+        Handle POST requests to verify a one-time password.
+
+        Args:
+            request (Request): The incoming request.
+            token (str): The token to verify.
+
+        Returns:
+            Response: A response with the verification result.
+        """
+        # Create a serializer instance with the incoming data and context
+        serializer = OneTimePasswordVerificationSerializer(data=request.data, context={'token': token, 'request': request})
+
+        # Check if the serializer is valid
+        if serializer.is_valid():
+            # Changing the user is_verified to True value and save it
+            user = request.user
+            user.is_verified = True
+            user.save()
+            # If the serializer is valid, return a success response
+            return Response({'message': 'Account verified successfully'}, status=status.HTTP_200_OK)
+        else:
+            # If the serializer is not valid, get the error messages
+            errors = serializer.errors
+
+            # Map the error messages to specific status codes
+            if 'unauthorized-user' in errors:
+                # Return a 401 UNAUTHORIZED response
+                return Response({'errors': errors}, status=status.HTTP_401_UNAUTHORIZED)
+            elif 'user' in errors:
+                # Return a 403 FORBIDDEN response
+                return Response({'errors': errors}, status=status.HTTP_403_FORBIDDEN)
+            else:
+                # Return a 400 BAD REQUEST response
+                return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
