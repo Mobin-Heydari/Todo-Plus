@@ -9,4 +9,5 @@ urlpatterns = [
     path('users/', include("Users.urls", namespace="Users")),
     path('auth/', include("Authentication.urls", namespace="Authentication")),
     path('profiles/', include("Profiles.urls", namespace="Profiles")),
+    path('accounts/', include("Accounts.urls", namespace="Accounts")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
