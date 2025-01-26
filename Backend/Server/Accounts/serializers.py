@@ -70,3 +70,55 @@ class OneTimePasswordSerializer(serializers.ModelSerializer):
 
         # Return the token for the newly created OTP
         return {'token': str(otp.token)}
+
+class OneTimePasswordVerificationSerializer(serializers.Serializer):
+    """
+    Serializer for verifying a one-time password.
+    """
+
+    # Define the fields for the serializer
+    code = serializers.CharField(max_length=6, required=True)
+
+    def validate(self, attrs):
+        """
+        Validate the incoming data.
+
+        Args:
+            attrs (dict): The incoming data.
+
+        Returns:
+            dict: The validated data.
+
+        Raises:
+            ValidationError: If the data is invalid.
+        """
+        # Get the token and request from the context
+        token = self.context['token']
+        request = self.context['request']
+
+        # Try to get the one-time password instance from the database
+        try:
+            otp = OneTimePassword.objects.get(token=token)
+        except OneTimePassword.DoesNotExist:
+            # If the one-time password instance does not exist, raise a validation error
+            raise serializers.ValidationError({'token': ['Invalid token']})
+
+        # Check if the user is authenticated
+        if request.user.is_authenticated:
+            # Check if the user is authorized to access the resource
+            if request.user == otp.user:
+                # Check if the code is valid
+                if attrs['code'] == otp.code:
+                    # If the code is valid, return the validated data
+                    return attrs
+                else:
+                    # If the code is not valid, raise a validation error
+                    raise serializers.ValidationError({'code': ['Invalid code']})
+            else:
+                # If the user is not authorized, raise a validation error
+                raise serializers.ValidationError({'user': ['Invalid user']})
+        else:
+            # If the user is not authenticated, raise a validation error
+            raise serializers.ValidationError({'unauthorized-user': ['Unauthorized user']})
+        
+        
