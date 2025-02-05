@@ -27,7 +27,7 @@ class AccountVerificationGenerateOTPView(APIView):
 
         if request.user.is_authenticated:
             if request.user.is_active:
-                if not request.user.is_verificated:
+                if not request.user.is_verified:
                     # Check if the incoming data is valid
                     if serializer.is_valid(raise_exception=True):
                         # Create a new OTP instance using the validated data
@@ -39,7 +39,7 @@ class AccountVerificationGenerateOTPView(APIView):
                                 # Message indicating that the OTP was sent successfully
                                 'message': 'OTP sent successfully',
                                 # Token for the newly generated OTP
-                                'otp': otp_data
+                                'otp': otp_data,
                             },
                             # HTTP status code for created resources
                             status=status.HTTP_201_CREATED
@@ -115,12 +115,13 @@ class AccountVerificationView(APIView):
             errors = serializer.errors
 
             # Map the error messages to specific status codes
-            if 'unauthorized-user' in errors:
-                # Return a 401 UNAUTHORIZED response
+            if 'unautherized-user' in errors:
                 return Response({'errors': errors}, status=status.HTTP_401_UNAUTHORIZED)
-            elif 'user' in errors:
-                # Return a 403 FORBIDDEN response
+            if 'user' in errors:
                 return Response({'errors': errors}, status=status.HTTP_403_FORBIDDEN)
-            else:
-                # Return a 400 BAD REQUEST response
+            if 'token' in errors:
+                return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+            if 'expired' in errors:
+                return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+            if 'code' in errors:
                 return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)

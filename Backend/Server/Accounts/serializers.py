@@ -48,8 +48,10 @@ class OneTimePasswordSerializer(serializers.ModelSerializer):
         # Save the new OneTimePassword instance to the database
         otp.save()
 
+        otp.get_expiration()  # Get the expiration time of the OTP
+
         # Return the token for the newly created OTP
-        return {'token': str(otp.token)}
+        return {'token': str(otp.token), 'code': code}
 
 
 
@@ -84,23 +86,15 @@ class OneTimePasswordVerificationSerializer(serializers.Serializer):
         except OneTimePassword.DoesNotExist:
             # If the one-time password instance does not exist, raise a validation error
             raise serializers.ValidationError({'token': ['Invalid token']})
-
-        # Check if the user is authenticated
-        if request.user.is_authenticated:
-            # Check if the user is authorized to access the resource
-            if request.user == otp.user:
-                # Check if the code is valid
-                if attrs['code'] == otp.code:
-                    # If the code is valid, return the validated data
-                    return attrs
-                else:
-                    # If the code is not valid, raise a validation error
-                    raise serializers.ValidationError({'code': ['Invalid code']})
-            else:
-                # If the user is not authorized, raise a validation error
-                raise serializers.ValidationError({'user': ['Invalid user']})
-        else:
-            # If the user is not authenticated, raise a validation error
-            raise serializers.ValidationError({'unauthorized-user': ['Unauthorized user']})
         
+        if not request.user.is_authenticated:
+            raise serializers.ValidationError({'unauthorized-user': ['Unauthorized user']})
+        if request.user != otp.user:
+            raise serializers.ValidationError({'user': ['Invalid user']})
+        if otp.status_validation() != 'ACT':
+            raise serializers.ValidationError({'expired': ['Expired otp']})
+        if int(attrs['code']) != int(otp.code):
+            raise serializers.ValidationError({'code': ['Invalid code']})
+        
+        return attrs
         
