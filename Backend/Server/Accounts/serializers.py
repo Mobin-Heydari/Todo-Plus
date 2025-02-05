@@ -22,26 +22,6 @@ class OneTimePasswordSerializer(serializers.ModelSerializer):
         # Specify all fields from the model
         exclude = ['code', 'user']
 
-    # Validate the incoming data
-    def validate(self, attrs):
-        """
-        Validate the incoming data.
-        Checks if the user is authenticated, active, and not already verified.
-        """
-        # Get the request object from the context
-        request = self.context.get("request")
-
-        # Check if the user is authenticated
-        if not request.user.is_authenticated:
-            raise serializers.ValidationError("User is not authenticated")
-        # Check if the user is active
-        if not request.user.is_active:
-            raise serializers.ValidationError("User is not active")
-        # Check if the user is already verified
-        if request.user.is_verified:
-            raise serializers.ValidationError("User is already verified")
-        
-        return attrs
 
     # Create a new OneTimePassword instance
     def create(self, validated_data):
@@ -70,6 +50,8 @@ class OneTimePasswordSerializer(serializers.ModelSerializer):
 
         # Return the token for the newly created OTP
         return {'token': str(otp.token)}
+
+
 
 class OneTimePasswordVerificationSerializer(serializers.Serializer):
     """

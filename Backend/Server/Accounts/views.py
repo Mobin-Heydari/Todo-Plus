@@ -10,7 +10,7 @@ from .serializers import OneTimePasswordSerializer, OneTimePasswordVerificationS
 
 
 # Define the GenerateOTPView class
-class GenerateOTPView(APIView):
+class AccountVerificationGenerateOTPView(APIView):
     """
     View for generating a One-Time Password (OTP) for user verification.
     Handles POST requests to generate a new OTP.
@@ -25,29 +25,46 @@ class GenerateOTPView(APIView):
         # Create a new OneTimePasswordSerializer instance with the incoming data
         serializer = OneTimePasswordSerializer(data=request.data, context={'request': request})
 
-        # Check if the incoming data is valid
-        if serializer.is_valid(raise_exception=True):
-            # Create a new OTP instance using the validated data
-            otp_data = serializer.create(serializer.validated_data)
+        if request.user.is_authenticated:
+            if request.user.is_active:
+                if not request.user.is_verificated:
+                    # Check if the incoming data is valid
+                    if serializer.is_valid(raise_exception=True):
+                        # Create a new OTP instance using the validated data
+                        otp_data = serializer.create(serializer.validated_data)
 
-            # Return a successful response with the OTP token
+                        # Return a successful response with the OTP token
+                        return Response(
+                            {
+                                # Message indicating that the OTP was sent successfully
+                                'message': 'OTP sent successfully',
+                                # Token for the newly generated OTP
+                                'otp': otp_data
+                            },
+                            # HTTP status code for created resources
+                            status=status.HTTP_201_CREATED
+                        )
+                    else:
+                        # Return an error response with validation errors
+                        return Response(
+                            # Validation errors from the serializer
+                            serializer.errors,
+                            # HTTP status code for bad requests
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                else:
+                    return Response(
+                        {'message': 'Your account is verificated'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             return Response(
-                {
-                    # Message indicating that the OTP was sent successfully
-                    'message': 'OTP sent successfully',
-                    # Token for the newly generated OTP
-                    'otp': otp_data
-                },
-                # HTTP status code for created resources
-                status=status.HTTP_201_CREATED
+                {'message': 'Your account is not active.'},
+                status=status.HTTP_403_FORBIDDEN
             )
         else:
-            # Return an error response with validation errors
             return Response(
-                # Validation errors from the serializer
-                serializer.errors,
-                # HTTP status code for bad requests
-                status=status.HTTP_400_BAD_REQUEST
+                {'message': 'You are not logged in.'},
+                status=status.HTTP_401_UNAUTHORIZED
             )
     
     # Define a method to handle exceptions raised during view execution
