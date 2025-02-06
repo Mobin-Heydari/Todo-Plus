@@ -24,6 +24,8 @@ class Tasks(models.Model):
     )
 
     title = models.CharField(max_length=255)
+    # New unique field for Accsessing the entire task
+    slug = models.SlugField(max_length=255, unique=True, null=True, blank=True)
 
     description = models.TextField(null=True, blank=True)
 
