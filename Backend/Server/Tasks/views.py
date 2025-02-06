@@ -20,3 +20,10 @@ class UserTasksViewSet(ViewSet):
         instance = queryset.filter(user=request.user, slug=slug)
         serializer = TasksSerializer(instance, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def create(self, request):
+        serializer = TasksSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
