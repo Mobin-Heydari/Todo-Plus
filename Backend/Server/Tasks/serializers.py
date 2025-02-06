@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Tasks
+from django.utils.crypto import get_random_string
 
+from .models import Tasks
 
 
 
@@ -17,3 +18,26 @@ class TasksSerializer(serializers.ModelSerializer):
     # Getting the username instead of user id
     def get_user(self, obj):
         return obj.user.username
+    
+
+    def create(self, validated_data):
+        # Geting the request object through the context
+        request = self.context.get('request')
+        # Geting the user by request 
+        user = request.user
+
+        # Using random string func to generate a random string for slug field
+        slug = get_random_string(255)
+        
+        # Creating the task query by validated data and other data that we got
+        task = Tasks.objects.create(
+            user=user,
+            slug=slug,
+            title=validated_data['title'],
+            description=validated_data['description'],
+            deadline=validated_data['deadline'],
+        )
+        # Saving the query 
+        task.save()
+        # Returning the query
+        return task
