@@ -41,3 +41,11 @@ class TasksSerializer(serializers.ModelSerializer):
         task.save()
         # Returning the query
         return task
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.deadline = validated_data.get('deadline', instance.deadline)
+        instance.status = validated_data.get('status', instance.status)
+        instance.save()
+    
