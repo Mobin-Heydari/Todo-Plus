@@ -37,3 +37,8 @@ class UserTasksViewSet(ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, slug):
+        instance = get_object_or_404(Tasks, slug=slug, user=request.user)
+        instance.delete()
+        return Response({'Massage':'Task has been deleted.'}, status=status.HTTP_204_NO_CONTENT)
